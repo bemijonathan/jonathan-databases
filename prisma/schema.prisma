@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// https://www.metabase.com/
+// we should be able to analyse and 
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// train ticket model 
+
+enum Roles {
+  ADMIN
+  USER
+  CUSTOMER
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  password String
+  name     String
+  surname  String
+  role     Roles
+  Tickets  Ticket[]
+  Journeys Journey[]
+}
+
+model Ticket {
+  id            Int      @id @default(autoincrement())
+  price         Int
+  name          String
+  from          String
+  to            String
+  departureDate DateTime
+  User          User?    @relation(fields: [userId], references: [id])
+  userId        Int?
+  trainId       Int?
+  Train         Train?   @relation(fields: [trainId], references: [id])
+  journeyId     Int?
+  Journey       Journey? @relation(fields: [journeyId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Train {
+  id            Int            @id @default(autoincrement())
+  name          String
+  capacity      Int
+  departureDate DateTime
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  Tickets       Ticket[]
+  Station       Station?       @relation(fields: [stationId], references: [id])
+  stationId     Int?
+  Journey       Journey[]
+  TrainRunDays  TrainRunDays[]
+}
+
+model Station {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Train     Train[]
+}
+
+model Journey {
+  id        Int      @id @default(autoincrement())
+  name      String
+  userId    Int?
+  User      User?    @relation(fields: [userId], references: [id])
+  trainId   Int?
+  Train     Train?   @relation(fields: [trainId], references: [id])
+  review    String
+  starRate  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Ticket    Ticket[]
+}
+
+model TrainRunDays {
+  id        Int      @id @default(autoincrement())
+  time      DateTime
+  trainId   Int?
+  Train     Train?   @relation(fields: [trainId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
